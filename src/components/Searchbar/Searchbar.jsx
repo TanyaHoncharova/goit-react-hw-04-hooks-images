@@ -1,33 +1,29 @@
-import React, { Component } from 'react';
-// import { TiZoom } from "react-icons/ti";
-// import { toast  } from 'react-toastify';
+import React, { useState } from 'react';
 
-class Searchbar extends Component {
 
-    state = {
-        searchQuery: '',
-        
+const  Searchbar=({onSubmit})=> {
+
+  const [searchQuery, setSerchQuery] = useState('')
+
+  const handleNameChange = (e) => {
+        setSerchQuery( e.currentTarget.value.toLowerCase());
     };
 
-    handleNameChange = (e) => {
-        this.setState({ searchQuery: e.currentTarget.value.toLowerCase()});
-    };
-
-    handleSubmit = (event) => {
+   const handleSubmit = (event) => {
         event.preventDefault();
-        if (this.state.searchQuery.trim() === '') {
+        if (searchQuery.trim() === '') {
             alert('Enter query!');
             return
         }
 
-        this.props.onSubmit(this.state.searchQuery);
-        this.setState({ searchQuery: '' });
+      onSubmit(searchQuery);
+        setSerchQuery( '' );
 
     };
 
-    render() {
+  
         return (
-          <header className="Searchbar" onSubmit={this.handleSubmit}>
+          <header className="Searchbar" onSubmit={handleSubmit}>
           <form className="SearchForm">
             <button type="submit" className="SearchForm-button">
               <span className="SearchForm-button-label">Searc</span>
@@ -39,13 +35,13 @@ class Searchbar extends Component {
                 autoComplete="off"
                 autoFocus
                 placeholder="Search images and photos"
-                value={this.state.searchQuery}
-               onChange={this.handleNameChange}
+                value={searchQuery}
+               onChange={handleNameChange}
               />
           </form>
             </header>
       );
-    }
+    
 };
 
 export default Searchbar;

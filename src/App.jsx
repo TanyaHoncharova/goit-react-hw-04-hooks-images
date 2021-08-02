@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 // import { ToastContainer } from 'react-toastify';
-import ImagesApi from './services/ImagesApi';
+import Api from './services/ImagesApi';
 
 import Modal from './components/Modal';
 import Button from './components/Button';
@@ -10,118 +10,108 @@ import ImageGalleryItem from './components/ImageGalleryItem';
 import Loader from './components/Loader'
 import './App.css';
 
+const App = () => {
+  const [images, setImages] = useState('');
+  const [currentPage, setCurrentPage] = useState('1');
+  const [currentPageImages, setCurrentPageImages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [modalUrl, setModalUrl] = useState('');
+  const [modalAlt, setModalAlt] = useState('');
 
+  // useEffect(() => {
+  //   fetchImages()
+  // }, [searchQuery]);
 
-
-class App extends Component {
-  state = {
-    images: [],
-    currentPage: 1,
-    currentPageImages: [],
-    searchQuery: '',
-    isLoading: false,
-    error: null,
-    largeImage: '',
-    showModal: false,
-    modalUrl: '',
-    modalAlt: '',
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchQuery !== this.state.searchQuery) {
-      this.fetchImages();
-    }
-    if (prevState.currentPage > 2) {
-      this.scrollWindow();
-    }
-  }
+  useEffect(() => {
+    scrollWindow()
+  }, [currentPage]);
   
-  toggleModal = () => {
-    this.setState(({showModal}) => ({
-      showModal: !showModal
-    }))
-  }
-
-  handleFormSubmit = (searchQuery) => {
-    this.setState({
-      searchQuery: searchQuery,
-      currentPage: 1, 
-      images: [], 
-      error: null, 
-    });
+  const toggleModal = () => {
+    setShowModal(!showModal)
   };
 
-  fetchImages = () => {
-    const { searchQuery, currentPage } = this.state;
-    const options = { searchQuery, currentPage };
+  const handleFormSubmit = (searchQuery) => {
+    setSearchQuery(searchQuery);
+    setCurrentPage(1);
+    setImages([]);
+    setError(null);
+  };
 
-    this.setState({ loading: true });
+  useEffect(() => {
+    if (searchQuery) {
+      searchImagesFetch();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
-    ImagesApi.fetchImages(options)
-      .then(images => {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images],
-          currentPage: prevState.currentPage + 1,
-          currentPageImages: [...images],
-        }));
-        if (images.length === 0) {
-          this.setState({
-            error: 'Nothing was find by your query. Try again.',
+  const searchImagesFetch = () => {
+    setIsLoading(true);
+    Api.fetchImage(searchQuery, currentPageImages)
+      .then((imagesArr) => {
+        if (currentPageImages === 1) {
+          setImages(imagesArr.hits)
+        } else {
+          setImages((prevState) => [...prevState, ...imagesArr.hits]);
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth',
           });
         }
       })
-      .catch(error => this.setState({ error: error.message }))
-      .finally(() => {
-        
-        this.setState({ isLoading: false });
+      .catch((error) => setError(error))
+      .finally(() =>{
+        setIsLoading(false);
+        setCurrentPageImages((prevPage) => prevPage + 1);
       });
   };
-
-  onClickImageGalleryItem = (e) => {
-    this.setState({
-      modalUrl: e.currentTarget.getAttribute('url'),
-      modalAlt: e.currentTarget.getAttribute('alt'),
-    });
-    this.toggleModal();
+  
+  const onClickImageGalleryItem = (e) => {
+    setModalUrl(e.currentTarget.getAttribute('url'));
+    setModalAlt(e.currentTarget.getAttribute('alt'));
+    toggleModal();
   };
 
-    scrollWindow = () => {
+  const scrollWindow = () => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     });
   };
 
-  render() {
-    const { images, searchQuery, currentPageImages, isLoading, error, showModal, modalAlt, modalUrl } = this.state;
-    const shouldRenderLoadMoreButton = !(currentPageImages.length < 12) && !isLoading;
-    return (
-      <>
-        <Searchbar onSubmit={this.handleFormSubmit} />
-        {error && (
-          <p> something went wrong ... {error } </p>
-        )}
-        <ImageGallery>
-          {images.map(({ id, tags, webformatURL, largeImageURL }) => (
-            <ImageGalleryItem key={id} alt={tags} src={webformatURL} url={largeImageURL} onClick={this.onClickImageGalleryItem} />
-          ))}
-        </ImageGallery>
-        {isLoading && <Loader name={searchQuery}/>}
+  const shouldRenderLoadMoreButton = !(currentPageImages.length < 12) && !isLoading;
+
+  return (
+    <>
+      <Searchbar onSubmit={handleFormSubmit} />
+      {error && (
+        <p> something went wrong ... {error} </p>
+      )}
+      <ImageGallery>
+        { images && images.map(({ id, tags, webformatURL, largeImageURL }) => (
+          <ImageGalleryItem key={id} alt={tags} src={webformatURL} url={largeImageURL} onClick={onClickImageGalleryItem} />
+        ))}
+      </ImageGallery>
+      {isLoading && <Loader name={searchQuery} />}
         
-         { shouldRenderLoadMoreButton && 
-          <Button onClick={this.fetchImages} />}
+      {shouldRenderLoadMoreButton &&
+        <Button onClick={searchImagesFetch} />}
         
 
-        {showModal &&
-          (<Modal onClose={this.toggleModal}
-            src={modalUrl} alt={modalAlt}>
-          <button type="button" onClick={this.toggleModal}>
+      {showModal &&
+        (<Modal onClose={toggleModal}
+          src={modalUrl} alt={modalAlt}>
+          <button type="button" onClick={toggleModal}>
             Close
           </button>
         </Modal>)}
-        </>
+    </>
   )
-  }
 };
+
+
 
 export default App;

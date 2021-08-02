@@ -1,5 +1,6 @@
 import { ImSpinner } from 'react-icons/im';
 import pendingImage from '../../services/pandingImg.png';
+// import { useState } from 'react';
 
 
 const styles = {
@@ -12,7 +13,7 @@ const styles = {
 };
 
 
-export default function LoadingImg({ searchQuery }) {
+ function LoadingImg({ searchQuery }) {
     const card = {
         src: pendingImage,
         alt: ' ',
@@ -32,4 +33,6 @@ export default function LoadingImg({ searchQuery }) {
           />
     </div>
   );
-}
+};
+
+export default LoadingImg;
