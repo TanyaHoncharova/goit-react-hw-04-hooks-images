@@ -11,9 +11,10 @@ const  Modal =({onClose, src, alt})=> {
 
   useEffect(
     () =>{
-    window.addEventListener('keydown', this.handleKeyDown);
-      return () => { window.removeEventListener('keydown', this.handleKeyDown) };
+    window.addEventListener('keydown', handleKeyDown);
+      return () => { window.removeEventListener('keydown', handleKeyDown) };
   }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     , []);
 
 

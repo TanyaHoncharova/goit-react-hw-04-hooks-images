@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // import { ToastContainer } from 'react-toastify';
-import Api from './services/ImagesApi';
+import imageAPI from './services/ImagesApi';
 
 import Modal from './components/Modal';
 import Button from './components/Button';
@@ -12,35 +12,20 @@ import './App.css';
 
 const App = () => {
   const [images, setImages] = useState('');
-  const [currentPage, setCurrentPage] = useState('1');
-  const [currentPageImages, setCurrentPageImages] = useState([]);
+  const [currentPage, setCurrentPage] = useState('');
+  const [currentPageImages, setCurrentPageImages] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [largeImageURL, setLargeImageURL] = useState('');
-  const [showModal, setShowModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
   const [modalUrl, setModalUrl] = useState('');
   const [modalAlt, setModalAlt] = useState('');
 
-  // useEffect(() => {
-  //   fetchImages()
-  // }, [searchQuery]);
 
   useEffect(() => {
     scrollWindow()
   }, [currentPage]);
   
-  const toggleModal = () => {
-    setShowModal(!showModal)
-  };
-
-  const handleFormSubmit = (searchQuery) => {
-    setSearchQuery(searchQuery);
-    setCurrentPage(1);
-    setImages([]);
-    setError(null);
-  };
-
   useEffect(() => {
     if (searchQuery) {
       searchImagesFetch();
@@ -48,11 +33,12 @@ const App = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  const searchImagesFetch = () => {
+    const searchImagesFetch = () => {
     setIsLoading(true);
-    Api.fetchImage(searchQuery, currentPageImages)
+    imageAPI
+      .fetchImage(searchQuery, currentPage)
       .then((imagesArr) => {
-        if (currentPageImages === 1) {
+        if (currentPage === 1) {
           setImages(imagesArr.hits)
         } else {
           setImages((prevState) => [...prevState, ...imagesArr.hits]);
@@ -65,9 +51,22 @@ const App = () => {
       .catch((error) => setError(error))
       .finally(() =>{
         setIsLoading(false);
-        setCurrentPageImages((prevPage) => prevPage + 1);
+        setCurrentPage((prevPage) => prevPage + 1);
+        setCurrentPageImages((prevState) => prevState + 12);
       });
   };
+
+    const toggleModal = () => {
+    setShowModal(!showModal)
+  };
+
+  const handleFormSubmit = (searchQuery) => {
+    setSearchQuery(searchQuery);
+    setCurrentPage(1);
+    setImages([]);
+    setError(null);
+  };
+
   
   const onClickImageGalleryItem = (e) => {
     setModalUrl(e.currentTarget.getAttribute('url'));
@@ -82,7 +81,7 @@ const App = () => {
     });
   };
 
-  const shouldRenderLoadMoreButton = !(currentPageImages.length < 12) && !isLoading;
+  const shouldRenderLoadMoreButton = !(currentPageImages < 12) && !isLoading;
 
   return (
     <>
@@ -97,10 +96,8 @@ const App = () => {
       </ImageGallery>
       {isLoading && <Loader name={searchQuery} />}
         
-      {shouldRenderLoadMoreButton &&
+      { shouldRenderLoadMoreButton &&
         <Button onClick={searchImagesFetch} />}
-        
-
       {showModal &&
         (<Modal onClose={toggleModal}
           src={modalUrl} alt={modalAlt}>

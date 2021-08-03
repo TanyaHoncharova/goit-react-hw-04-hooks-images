@@ -1,22 +1,35 @@
-import axios from 'axios';
+// import axios from 'axios';
 
-const KEY = '21857755-e4f1c8434e57799dc3fa1e51f';
-axios.defaults.baseURL = 'https://pixabay.com/api/';
+// const KEY = '21857755-e4f1c8434e57799dc3fa1e51f';
+// axios.defaults.baseURL = 'https://pixabay.com/api/';
 
-const  fetchImages= async({searchQuery =' ', currentPage =1 }) => {
+// const  fetchImages= async({searchQuery =' ', currentPage =1 }) => {
   
-  return axios
-    .get(
-      `?q=${searchQuery}&page=${currentPage}&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`,
-    )
-    .then(response => response.data.hits);
-};
+//   return axios
+//     .get(
+//       `?q=${searchQuery}&page=${currentPage}&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`,
+//     )
+//     .then(response => response.data.hits);
+// };
 
 
 
-const api = {
-    fetchImages,
+// const api = {
+//     fetchImages,
 
-};
+// };
+
+// export default api;
+const KEY = '21857755-e4f1c8434e57799dc3fa1e51f';
+async function fetchImage(searchQuery, currentPage) {
+  const res = await fetch(
+    `https://pixabay.com/api/?q=${searchQuery}&page=${currentPage}&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`
+  );
+  if (res.ok) {
+    return res.json();
+  }
+  return await Promise.reject(new Error('There is no data'));
+}
+const api = { fetchImage };
 
 export default api;
