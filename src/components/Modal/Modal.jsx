@@ -33,7 +33,7 @@ const  Modal =({onClose, src, alt})=> {
   return  createPortal(
       <div className={styles.Overlay} onClick={handleBackdropClick}>
             <div className={styles.Modal__content}>
-              <img src={src} alt={alt} />
+              <img className={styles.img}src={src} alt={alt} />
             </div>
             </div>,
             modalRoot,
