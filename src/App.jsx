@@ -22,9 +22,7 @@ const App = () => {
   const [modalAlt, setModalAlt] = useState('');
 
 
-  useEffect(() => {
-    scrollWindow()
-  }, [currentPage]);
+
   
   useEffect(() => {
     if (searchQuery) {
@@ -74,12 +72,7 @@ const App = () => {
     toggleModal();
   };
 
-  const scrollWindow = () => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
-  };
+
 
   const shouldRenderLoadMoreButton = !(currentPageImages < 12) && !isLoading;
 
